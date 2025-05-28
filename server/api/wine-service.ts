@@ -106,6 +106,7 @@ export function generateWineAttributesCSV(attributes: WineAttributes[]): Buffer 
   const records = attributes.map(attr => ({
     id: attr.id,
     nome: attr.nome,
+    status: attr.status,
     pais: attr.pais.value,
     pais_confidence: attr.pais.confidence,
     tipo: attr.tipo.value,
@@ -119,7 +120,7 @@ export function generateWineAttributesCSV(attributes: WineAttributes[]): Buffer 
     tampa: attr.tampa.value,
     tampa_confidence: attr.tampa.confidence,
     harmonizacao: attr.harmonizacao.values.join('; '),
-    harmonizacao_confidence: attr.harmonizacao.confidence
+    harmonizacao_confidence: attr.harmonizacao.confidence,
   }));
 
   // Convert to CSV
@@ -128,6 +129,7 @@ export function generateWineAttributesCSV(attributes: WineAttributes[]): Buffer 
     columns: [
       'id',
       'nome',
+      'status',
       'pais',
       'pais_confidence',
       'tipo',

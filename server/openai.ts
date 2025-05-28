@@ -250,7 +250,19 @@ export async function generateWineAttribute(produto: WineInput): Promise<WineAtt
 
     const content = completion.choices[0].message.content;
     if (!content) {
-      throw new Error('No content in response');
+      log('ERROR! No content in response');
+      return {
+        id: produto.id.toString(),
+        nome: produto.nome,
+        pais: { value: '', confidence: 0 },
+        tipo: { value: '', confidence: 0 },
+        classificacao: { value: '', confidence: 0 },
+        uva: { value: '', confidence: 0 },
+        tamanho: { value: '', confidence: 0 },
+        tampa: { value: '', confidence: 0 },
+        harmonizacao: { values: [], confidence: 0 },
+        status: 'Error'
+      }
     }
 
     const result = JSON.parse(content);
@@ -287,21 +299,23 @@ export async function generateWineAttribute(produto: WineInput): Promise<WineAtt
       harmonizacao: {
         values: validateMultipleEnum(result.harmonizacao.values, WinePairings),
         confidence: validateConfidence(result.harmonizacao.confidence)
-      }
+      },
+      status: 'OK'
     };
-  } catch (error) {
-    console.error('Error generating wine attributes:', error);
+  } catch (error: unknown) {
+    log('ERROR!', error instanceof Error ? error.message : String(error));
     // Return default values if there's an error
     return {
-      id: '',
-      nome: '',
+      id: produto.id.toString(),
+      nome: produto.nome,
       pais: { value: '', confidence: 0 },
       tipo: { value: '', confidence: 0 },
       classificacao: { value: '', confidence: 0 },
       uva: { value: '', confidence: 0 },
       tamanho: { value: '', confidence: 0 },
       tampa: { value: '', confidence: 0 },
-      harmonizacao: { values: [], confidence: 0 }
+      harmonizacao: { values: [], confidence: 0 },
+      status: 'Error'
     };
   }
 }
@@ -371,22 +385,25 @@ export async function generateWineAttributes(produtos: WineInput[]): Promise<Win
       harmonizacao: {
         values: validateMultipleEnum(result.harmonizacao.values, WinePairings),
         confidence: validateConfidence(result.harmonizacao.confidence)
-      }
+      },
+      status: 'OK'
     }));
 
-  } catch (error) {
-    console.error('Error generating wine attributes:', error);
+  } catch (error: unknown) {
+
+    console.error('Error generating wine attributes:', error instanceof Error ? error.message : String(error));
     // Return default values if there's an error
-    return produtos.map(() => ({
-      id: '',
-      nome: '',
+    return produtos.map((produto) => ({
+      id: produto.id.toString(),
+      nome: produto.nome,
       pais: { value: '', confidence: 0 },
       tipo: { value: '', confidence: 0 },
       classificacao: { value: '', confidence: 0 },
       uva: { value: '', confidence: 0 },
       tamanho: { value: '', confidence: 0 },
       tampa: { value: '', confidence: 0 },
-      harmonizacao: { values: [], confidence: 0 }
+      harmonizacao: { values: [], confidence: 0 },
+      status: 'Error'
     }));
   }
 }

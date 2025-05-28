@@ -7,18 +7,18 @@ export function Sidebar() {
   const [location] = useLocation();
 
   const navigationItems = [
+    // {
+    //   name: 'Início',
+    //   icon: Home,
+    //   path: '/',
+    // },
+    // {
+    //   name: 'Produtos por Categoria',
+    //   icon: LayoutGrid,
+    //   path: '/all-products',
+    // },
     {
-      name: 'Início',
-      icon: Home,
-      path: '/',
-    },
-    {
-      name: 'Produtos por Categoria',
-      icon: LayoutGrid,
-      path: '/all-products',
-    },
-    {
-      name: 'Processamento de Vinhos',
+      name: 'Atributos de Vinhos',
       icon: Wine,
       path: '/wine-attributes',
     },
@@ -34,7 +34,7 @@ export function Sidebar() {
       <div className="p-6">
         <h2 className="text-xl font-bold text-beer-gold flex items-center">
           <Database className="w-6 h-6 mr-2" />
-          Aipim
+          Catalog - IA - POC
         </h2>
         <p className="text-xs text-gray-500 mt-1">
           Sistema de Gestão de Informações de Produtos
@@ -67,7 +67,7 @@ export function Sidebar() {
         <div className="flex items-center">
           <FileSpreadsheet className="w-6 h-6 text-gray-400" />
           <div className="ml-3">
-            <p className="text-xs font-medium text-gray-900">Aipim v1.5</p>
+            <p className="text-xs font-medium text-gray-900">Catalog - IA - POC</p>
             <p className="text-xs text-gray-500">Gerenciador de Dados</p>
           </div>
         </div>

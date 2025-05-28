@@ -50,7 +50,7 @@ export function WineAttributesPage() {
       setDownloadUrl(data.downloadUrl);
       toast({
         title: 'Sucesso',
-        description: `${data.totalProcessed} produtos processados com sucesso`,
+        description: `${data.totalProcessed} produtos processados.`,
         variant: 'default',
       });
     } catch (error) {
@@ -73,7 +73,7 @@ export function WineAttributesPage() {
         <div className="bg-white shadow-sm">
           <div className="px-8 py-4">
             <h1 className="text-2xl font-semibold font-inter text-dark-gray">
-              Processamento de Vinhos
+              Atributos de Vinhos
             </h1>
             <p className="text-sm text-gray-500">
               Upload de CSV para processamento de atributos de vinhos

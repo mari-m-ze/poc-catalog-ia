@@ -98,6 +98,13 @@ export type WineAttributeWithConfidence<T> = {
   confidence: number; // 0 to 100
 };
 
+export const ProcessingStatus = {
+  OK: 'OK',
+  Error: 'Error'
+} as const;
+
+export type ProcessingStatus = (typeof ProcessingStatus)[keyof typeof ProcessingStatus];
+
 export type WineAttributes = {
   id: string;
   nome: string;
@@ -111,6 +118,7 @@ export type WineAttributes = {
     values: WinePairing[];
     confidence: number;
   };
+  status: ProcessingStatus;
 };
 
 export type WineInput = {
