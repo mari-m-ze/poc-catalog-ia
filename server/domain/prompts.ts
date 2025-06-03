@@ -17,14 +17,13 @@ Use APENAS os valores fornecidos em cada categoria com nível de confiabilidade 
 
 Para o campo harmonização, é possível retornar múltiplos valores da lista fornecida.
 Para o campo uva, se for uma mistura de uvas, retorne 'Blend'.    
-Para cada atributo, forneça um nível de confiança em porcentagem (0 a 100), onde:
+Para cada atributo, forneça um nível de confiança em porcentagem (0 a 100 retornando como número e não string), onde:
 - 0% - Nenhuma confiança (chute)
 - 30% - Baixa confiança (pouca certeza)
 - 50% - Média confiança (provável)
 - 70% - Alta confiança (muito provável)
 - 100% - Certeza absoluta (explícito no nome ou fonte confiável)
 
-   
     Produto: [ID: ${product.id}] Nome:${product.nome} 
     
     Categorias disponíveis:
@@ -93,7 +92,7 @@ Para cada atributo, forneça um nível de confiança em porcentagem (0 a 100), o
 
    
     Produtos:
-    ${produtos.map((produto, index) => `${index + 1}. [ID: ${produto.id}] ${produto.title}`).join('\n')}
+    ${produtos.map((produto, index) => `${index + 1}. [ID: ${produto.id}] ${produto.nome}`).join('\n')}
     
     Categorias disponíveis:
     
@@ -162,7 +161,7 @@ export function generateWineAttributesPromptbkp(produtos: WineInput[]): string {
     100% - Certeza absoluta (explícito no nome)
     
     Produtos:
-    ${produtos.map((produto, index) => `${index + 1}. [ID: ${produto.id}] ${produto.title}`).join('\n')}
+    ${produtos.map((produto, index) => `${index + 1}. [ID: ${produto.id}] ${produto.nome}`).join('\n')}
     
     Categorias disponíveis:
     
@@ -173,43 +172,5 @@ export function generateWineAttributesPromptbkp(produtos: WineInput[]): string {
     Tamanho: ${Sizes.join(', ')}
     Tampa: ${Closures.join(', ')}
     Harmonização: ${WinePairings.join(', ')}
-    
-    Por favor, retorne apenas o array de objetos JSON, um para cada produto, com os seguintes campos:
-    [
-      {
-        "id": "id do produto fornecido entre colchetes",
-        "nome": "nome do produto analisado",
-        "pais": {
-          "value": "país de origem do vinho",
-          "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
-        },
-        "tipo": {
-          "value": "tipo do vinho",
-          "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
-        },
-        "classificacao": {
-          "value": "classificação do vinho",
-          "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
-        },
-        "uva": {
-          "value": "variedade da uva",
-          "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
-        },
-        "tamanho": {
-          "value": "tamanho da garrafa",
-          "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
-        },
-        "tampa": {
-          "value": "tipo de tampa",
-          "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
-        },
-        "harmonizacao": {
-          "values": ["harmonizações sugeridas"],
-          "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
-        }
-      }
-    ]
-    
-    
   `;
 }

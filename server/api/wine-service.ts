@@ -1,7 +1,7 @@
 import { WineAttributes, WineInput } from "../domain/wine";
-import * as openai from "../openai";
-import * as anthropic from "../anthropic";
-import * as gemini from "../gemini";
+import * as openai from "../ai/openai";
+import * as anthropic from "../ai/anthropic";
+import * as gemini from "../ai/gemini";
 import { config } from "../config";
 import { parse } from 'csv-parse/sync';
 import { stringify } from 'csv-stringify/sync';
@@ -69,10 +69,23 @@ export async function processWineCSV(fileBuffer: Buffer): Promise<{ attributes: 
     // Process each wine input individually and collect results
     const results: WineAttributes[] = [];
     for (const input of wineInputs) {
-      const result = await openai.generateWineAttribute(input);
+      const provider = config.getAIProvider();
+      let result: WineAttributes;
+      switch (provider) {
+        case "openai":
+          result = await openai.generateWineAttribute(input);
+          break;
+        case "anthropic":
+          // result = await anthropic.generateWineAttribute(input);
+          throw new Error("Anthropic provider not implemented yet");
+        case "gemini":
+          result = await gemini.generateWineAttribute(input);
+          break;
+        default:
+          throw new Error(`Unsupported AI provider: ${provider}`);
+      }
       results.push(result);
     }
-
     // Save output CSV
     const outputCsv = generateWineAttributesCSV(results);
     fs.writeFileSync(outputPath, outputCsv);

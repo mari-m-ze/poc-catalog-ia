@@ -1,4 +1,4 @@
 {
-  "aiProvider": "openai",
+  "aiProvider": "gemini",
   "language": "pt"
 }

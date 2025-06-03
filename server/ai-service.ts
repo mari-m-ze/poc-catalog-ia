@@ -1,8 +1,8 @@
 import { AIEnhancementType, AIProvider } from "@shared/schema";
 import { config } from "./config";
-import * as openai from "./openai";
-import * as anthropic from "./anthropic";
-import * as gemini from "./gemini";
+import * as openai from "./ai/openai";
+import * as anthropic from "./ai/anthropic";
+import * as gemini from "./ai/gemini";
 
 type BeerField = {
   product_id: string;
