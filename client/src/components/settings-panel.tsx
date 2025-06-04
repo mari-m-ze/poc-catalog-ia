@@ -19,6 +19,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 
 export function SettingsPanel() {
   const { 
@@ -34,11 +36,13 @@ export function SettingsPanel() {
   const { toast } = useToast();
   const [selectedProvider, setSelectedProvider] = useState<AIProvider | ''>('');
   const [apiKeyStatus, setApiKeyStatus] = useState<'checking' | 'available' | 'unavailable' | null>(null);
+  const [confidence, setConfidence] = useState<number>(50);
   
   // Quando as configurações são carregadas, atualize o estado local
   useEffect(() => {
     if (settings) {
       setSelectedProvider(settings.aiProvider);
+      setConfidence(settings.confidence || 50);
       checkCurrentApiKey(settings.aiProvider);
     }
   }, [settings]);
@@ -105,6 +109,19 @@ export function SettingsPanel() {
     );
   };
   
+  // Add confidence change handler
+  const handleConfidenceChange = (value: number[]) => {
+    const newConfidence = value[0];
+    setConfidence(newConfidence);
+    
+    updateSettings({ confidence: newConfidence });
+    
+    toast({
+      title: 'Configurações atualizadas',
+      description: `Limite de confiança alterado para ${newConfidence}%`,
+    });
+  };
+  
   if (isLoadingSettings || isLoadingProviders) {
     return (
       <Card className="w-full mb-6">
@@ -147,6 +164,23 @@ export function SettingsPanel() {
             <div className="text-sm mt-2">
               {renderApiKeyStatus()}
             </div>
+          </div>
+          <div className="grid gap-3">
+            <Label className="text-sm font-medium">
+              Limite de Confiança Mínima: {confidence}%
+            </Label>
+            <Slider
+              value={[confidence]}
+              onValueChange={handleConfidenceChange}
+              max={100}
+              min={0}
+              step={5}
+              disabled={isUpdating}
+              className="w-full"
+            />
+            <p className="text-xs text-gray-500">
+              Apenas atributos com confiança igual ou superior a {confidence}% serão aceitos
+            </p>
           </div>
         </div>
       </CardContent>

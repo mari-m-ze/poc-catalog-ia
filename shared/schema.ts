@@ -37,6 +37,7 @@ export const aiProviders = ["openai", "anthropic", "gemini"];
 export const AppSettingsSchema = z.object({
   aiProvider: z.enum(["openai", "anthropic", "gemini"]).default("openai"),
   language: z.enum(["pt", "en"]).default("pt"),
+  confidence: z.number().min(0).max(100).default(50)
 });
 
 export type AppSettings = z.infer<typeof AppSettingsSchema>;

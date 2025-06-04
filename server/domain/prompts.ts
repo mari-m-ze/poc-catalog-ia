@@ -9,11 +9,14 @@ import {
 } from './wine';
 
 import { WineInput } from './wine';
-export function generateWineAttributesPromptSingle(product: WineInput): string {
-  return `
-    Para o produto abaixo use a internet (ou base de dados confiável) para identificar os atributos solicitados. Aplique máxima profundidade e precisão em cada item. 
 
-Use APENAS os valores fornecidos em cada categoria com nível de confiabilidade acima de 70%. 'Outras', 'Outros', 'Outra', 'Outro' podem ser utilizados quando não se encaixarem nos demais valores e tiverem essa confiança de 70% ou mais. Se não tiver essa confiança, retorne uma string vazia ("").
+const CONFIDENCE = 50;
+
+export function generateWineAttributesPromptSingle(product: WineInput, confidence: number = CONFIDENCE): string {
+  return `
+    Para o produto abaixo use a internet (ou base de dados confiável) para identificar os atributos solicitados. Aplique máxima profundidade de busca. 
+
+Use APENAS os valores fornecidos em cada categoria com nível de confiabilidade acima de ${confidence}%. 'Outras', 'Outros', 'Outra', 'Outro' podem ser utilizados quando não se encaixarem nos demais valores e tiverem essa confiança de ${confidence}% ou mais. Se não tiver essa confiança, retorne uma string vazia ("").
 
 Para o campo harmonização, é possível retornar múltiplos valores da lista fornecida.
 Para o campo uva, se for uma mistura de uvas, retorne 'Blend'.    
@@ -75,11 +78,11 @@ IMPORTANTE: Retorne SOMENTE o objeto JSON diretamente, sem explicações, sem te
     
   `;
 }
-export function generateWineAttributesPrompt(produtos: WineInput[]): string {
+export function generateWineAttributesPrompt(produtos: WineInput[], confidence: number = CONFIDENCE): string {
   return `
     Para cada produto listado abaixo, analise individualmente como se fosse o único item no prompt. Use a internet (ou base de dados confiável) para identificar os atributos solicitados. Aplique máxima profundidade e precisão em cada item. Não compartilhe ou reutilize inferências entre produtos. Avalie cada produto de forma isolada, com o mesmo rigor que seria usado se estivesse sendo enviado sozinho.
 
-Use APENAS os valores fornecidos em cada categoria com nível de confiabilidade acima de 70%. 'Outras', 'Outros', 'Outra', 'Outro' podem ser utilizados quando não se encaixarem nos demais valores e tiverem essa confiança de 70% ou mais. Se não tiver essa confiança, retorne uma string vazia ("").
+Use APENAS os valores fornecidos em cada categoria com nível de confiabilidade acima de ${confidence}%. 'Outras', 'Outros', 'Outra', 'Outro' podem ser utilizados quando não se encaixarem nos demais valores e tiverem essa confiança de ${confidence}% ou mais. Se não tiver essa confiança, retorne uma string vazia ("").
 
 Para o campo harmonização, é possível retornar múltiplos valores da lista fornecida.
 Para o campo uva, se for uma mistura de uvas, retorne 'Blend'.    

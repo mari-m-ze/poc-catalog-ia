@@ -1,9 +1,11 @@
 import requests
 import os
+from dotenv import load_dotenv
 
-# Substitua pelas suas chaves
-BRAVE_API_KEY = "BSA9rij1D5nc4S9UlqF--1tfg7ngtKQ"
-OPENAI_API_KEY = "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"
+load_dotenv()  # Load environment variables from .env
+
+BRAVE_API_KEY = os.getenv("BRAVE_API_KEY")
+OPENAI_API_KEY= os.getenv("BRAVE_API_KEY2")
 
 def buscar_brave(query, num_results=50, market="pt-BR"):
     url = "https://api.search.brave.com/res/v1/web/search"

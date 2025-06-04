@@ -12,7 +12,8 @@ const CONFIG_PATH = path.join(__dirname, '..', 'app-config.json');
 // Valores padrão para as configurações
 const defaultConfig: AppSettings = {
   aiProvider: 'anthropic',
-  language: 'pt'
+  language: 'pt',
+  confidence: 50
 };
 
 // Carrega as configurações do arquivo ou usa os valores padrão

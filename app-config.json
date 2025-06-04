@@ -1,4 +1,5 @@
 {
   "aiProvider": "gemini",
-  "language": "pt"
+  "language": "pt",
+  "confidence": 50
 }

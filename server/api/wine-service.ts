@@ -39,16 +39,21 @@ export async function processWineCSV(fileBuffer: Buffer): Promise<{ attributes: 
   try {
     // Parse CSV content
     const records = parse(fileBuffer, {
-      columns: true, // Use first row as headers
+      columns: true,
       skip_empty_lines: true,
       trim: true
     });
 
+    // Get current AI provider
+    const currentProvider = config.getAIProvider();
+
     // Create temporary directory for this processing session
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wine-processing-'));
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const inputPath = path.join(tempDir, `input-${timestamp}.csv`);
-    const outputPath = path.join(tempDir, `output-${timestamp}.csv`);
+    
+    // Include AI provider in file names
+    const inputPath = path.join(tempDir, `input-${currentProvider}-${timestamp}.csv`);
+    const outputPath = path.join(tempDir, `output-${currentProvider}-${timestamp}.csv`);
 
     // Save input CSV
     fs.writeFileSync(inputPath, fileBuffer);
@@ -76,7 +81,6 @@ export async function processWineCSV(fileBuffer: Buffer): Promise<{ attributes: 
           result = await openai.generateWineAttribute(input);
           break;
         case "anthropic":
-          // result = await anthropic.generateWineAttribute(input);
           throw new Error("Anthropic provider not implemented yet");
         case "gemini":
           result = await gemini.generateWineAttribute(input);
@@ -86,6 +90,7 @@ export async function processWineCSV(fileBuffer: Buffer): Promise<{ attributes: 
       }
       results.push(result);
     }
+    
     // Save output CSV
     const outputCsv = generateWineAttributesCSV(results);
     fs.writeFileSync(outputPath, outputCsv);

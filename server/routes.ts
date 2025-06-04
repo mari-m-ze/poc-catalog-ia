@@ -113,6 +113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({
         totalProcessed: result.attributes.length,
+        attributes: result.attributes,
         downloadUrl: `/api/wines/files/${downloadFilename}`
       });
     } catch (error) {
