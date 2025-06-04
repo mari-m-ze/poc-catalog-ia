@@ -1,4 +1,4 @@
-import { WineAttributes, WineInput } from "../domain/wine";
+import { calculateOverallConfidence, WineAttributes, WineInput } from "../domain/wine";
 import * as openai from "../ai/openai";
 import * as anthropic from "../ai/anthropic";
 import * as gemini from "../ai/gemini";
@@ -88,6 +88,7 @@ export async function processWineCSV(fileBuffer: Buffer): Promise<{ attributes: 
         default:
           throw new Error(`Unsupported AI provider: ${provider}`);
       }
+      result.confidence = calculateOverallConfidence(result);
       results.push(result);
     }
     

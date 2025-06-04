@@ -41,19 +41,13 @@ type BeerField = {
   tipo: string;
 };
 
-export async function generateWineAttribute(produto: WineInput): Promise<WineAttributes> {
+export async function generateWineAttribute(produto: WineInput, confidence: number = 70): Promise<WineAttributes> {
   try {
-    const prompt = generateWineAttributesPromptSingle(produto);
+    const prompt = generateWineAttributesPromptSingle(produto, confidence);
     log('blalbla', prompt);
     const completion = await openai.chat.completions.create({
       // model: "gpt-4o",
       model: "gpt-4o-search-preview",
-      /**
-       * The messages to be sent to the AI model. The first message is a
-       * "system" message that provides context and instructions for the AI
-       * model. The second message is a "user" message that contains the
-       * prompt to be completed by the AI model.
-       */
       messages: [
         {
           "role": "system",

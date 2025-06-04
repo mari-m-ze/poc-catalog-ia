@@ -20,30 +20,22 @@ export function truncate(str: string, length: number): string {
 }
 
 export function downloadCSV(data: any[], filename: string): void {
-  // Convert data array to CSV string
   const csvContent = convertToCSV(data);
   
-  // Create a blob from the CSV string
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   
-  // Create a download link
   const link = document.createElement('a');
   
-  // Create a URL for the blob
   const url = URL.createObjectURL(blob);
   
-  // Set link properties
   link.setAttribute('href', url);
   link.setAttribute('download', filename);
   link.style.visibility = 'hidden';
   
-  // Add link to the document
   document.body.appendChild(link);
   
-  // Click the link to trigger download
   link.click();
   
-  // Clean up
   document.body.removeChild(link);
 }
 
@@ -52,18 +44,14 @@ export function convertToCSV(data: any[]): string {
     return '';
   }
   
-  // Extract column headers from the first object
   const headers = Object.keys(data[0]);
   
-  // Create header row
   const headerRow = headers.join(',');
   
-  // Create data rows
   const rows = data.map(obj => {
     return headers.map(header => {
       const value = obj[header];
       
-      // Handle null and undefined
       if (value === null || value === undefined) {
         return '';
       }

@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Sidebar } from '../components/sidebar';
 import { FileInput } from '../components/ui/file-input';
 import { Button } from '../components/ui/button';
 import { useToast } from '../hooks/use-toast';
-import { Download, FileDown, Loader2, Eye } from 'lucide-react';
+import { Download, FileDown, Loader2, Eye, AlertTriangle, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { DataTable } from '../components/ui/data-table';
+import { useSettings } from '@/hooks/use-settings';
 
 // Wine attributes type based on the server structure
 type WineAttributes = {
-  id: string;
+  id: number;
   nome: string;
   status: string;
   pais: { value: string; confidence: number };
@@ -18,14 +19,15 @@ type WineAttributes = {
   tamanho: { value: string; confidence: number };
   tampa: { value: string; confidence: number };
   harmonizacao: { values: string[]; confidence: number };
+  confidence: number|null;
 };
 
 export function WineAttributesPage() {
   const { toast } = useToast();
+  const { settings } = useSettings();
   const [isProcessing, setIsProcessing] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [wineAttributes, setWineAttributes] = useState<WineAttributes[]>([]);
-  const [showTable, setShowTable] = useState(false);
 
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) {
@@ -50,7 +52,6 @@ export function WineAttributesPage() {
     setIsProcessing(true);
     setDownloadUrl(null);
     setWineAttributes([]);
-    setShowTable(false);
 
     try {
       const formData = new FormData();
@@ -109,10 +110,26 @@ export function WineAttributesPage() {
     return 'bg-red-100 text-red-800';
   };
 
+  // Adicionar função para verificar baixa confiança
+  const isLowConfidence = (item: WineAttributes): boolean => {
+    const configuredConfidence = settings?.confidence ?? 70;
+    const itemConfidence = item.confidence ?? calculateAverageConfidence(item);
+    return itemConfidence < configuredConfidence;
+  };
+
   const tableColumns = [
+    {
+      id: 'id',
+      header: 'id',
+      sortable: true,
+      cell: (item: WineAttributes) => (
+        <div className="font-medium">{item.id}</div>
+      ),
+    },
     {
       id: 'nome',
       header: 'Nome do Vinho',
+      sortable: true,
       cell: (item: WineAttributes) => (
         <div className="font-medium">{item.nome}</div>
       ),
@@ -120,6 +137,7 @@ export function WineAttributesPage() {
     {
       id: 'status',
       header: 'Status',
+      sortable: true,
       cell: (item: WineAttributes) => (
         <span className={`px-2 py-1 rounded text-xs font-medium ${
           item.status === 'OK' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -131,10 +149,15 @@ export function WineAttributesPage() {
     {
       id: 'confidence',
       header: 'Confiança Média',
+      sortable: true,
       cell: (item: WineAttributes) => {
-        const avgConfidence = calculateAverageConfidence(item);
+        const avgConfidence = item.confidence ?? calculateAverageConfidence(item);
+        const configuredConfidence = settings?.confidence ?? 70;
+        const isLow = avgConfidence < configuredConfidence;
+        
         return (
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${isLow ? 'bg-red-50 p-2 rounded border-l-4 border-l-red-400' : ''}`}>
+            {isLow && <AlertTriangle className="w-4 h-4 text-red-500" />}
             <span className={`px-2 py-1 rounded text-xs font-medium ${getConfidenceColor(avgConfidence)}`}>
               {avgConfidence}%
             </span>
@@ -155,6 +178,7 @@ export function WineAttributesPage() {
     {
       id: 'pais',
       header: 'País',
+      sortable: true,
       cell: (item: WineAttributes) => (
         <div>
           <div>{item.pais.value}</div>
@@ -165,6 +189,7 @@ export function WineAttributesPage() {
     {
       id: 'tipo',
       header: 'Tipo',
+      sortable: true,
       cell: (item: WineAttributes) => (
         <div>
           <div>{item.tipo.value}</div>
@@ -175,6 +200,7 @@ export function WineAttributesPage() {
     {
       id: 'uva',
       header: 'Uva',
+      sortable: true,
       cell: (item: WineAttributes) => (
         <div>
           <div>{item.uva.value}</div>
@@ -185,6 +211,7 @@ export function WineAttributesPage() {
     {
       id: 'classificacao',
       header: 'Classificação',
+      sortable: true,
       cell: (item: WineAttributes) => (
         <div>
           <div>{item.classificacao.value}</div>
@@ -195,6 +222,7 @@ export function WineAttributesPage() {
     {
       id: 'tamanho',
       header: 'Tamanho',
+      sortable: true,
       cell: (item: WineAttributes) => (
         <div>
           <div>{item.tamanho.value}</div>
@@ -205,6 +233,7 @@ export function WineAttributesPage() {
     {
       id: 'tampa',
       header: 'Tampa',
+      sortable: true,
       cell: (item: WineAttributes) => (
         <div>
           <div>{item.tampa.value}</div>
@@ -262,48 +291,50 @@ export function WineAttributesPage() {
                 )}
               </div>
 
-              {/* Actions Section */}
-              {(downloadUrl || wineAttributes.length > 0) && (
-                <div className="pt-4 border-t flex gap-4">
-                  {downloadUrl && (
-                    <Button
-                      className="!bg-forest-green hover:!bg-green-700 !text-white font-medium"
-                      onClick={() => window.location.href = downloadUrl}
-                    >
-                      <FileDown className="mr-2 h-4 w-4" />
-                      Baixar CSV
-                    </Button>
-                  )}
-                  {wineAttributes.length > 0 && (
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowTable(!showTable)}
-                      className="font-medium"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      {showTable ? 'Ocultar' : 'Visualizar'} Tabela
-                    </Button>
-                  )}
+              {/* Actions Section - Only show download button */}
+              {downloadUrl && (
+                <div className="pt-4 border-t">
+                  <Button
+                    className="!bg-forest-green hover:!bg-green-700 !text-white font-medium"
+                    onClick={() => window.location.href = downloadUrl}
+                  >
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Baixar CSV
+                  </Button>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Results Table Section */}
-          {showTable && wineAttributes.length > 0 && (
+          {/* Results Table Section - Always visible when data exists */}
+          {wineAttributes.length > 0 && (
             <div className="bg-white shadow rounded-lg overflow-hidden">
               <div className="p-6">
                 <h2 className="text-lg font-medium font-inter text-dark-gray mb-4">
                   Atributos de Vinhos Processados ({wineAttributes.length} itens)
                 </h2>
+                
+                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                  <div className="flex items-center gap-2 text-amber-800 text-sm">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>
+                      Produtos com confiança abaixo de {settings?.confidence ?? 70}% são destacados em vermelho claro
+                    </span>
+                  </div>
+                </div>
+
                 <DataTable
                   data={wineAttributes}
                   columns={tableColumns}
                   searchable={true}
                   onSearch={(term) => {
-                    // Optional: implement search functionality
                     console.log('Search term:', term);
                   }}
+                  rowClassName={(item: WineAttributes) => 
+                    isLowConfidence(item) 
+                      ? "bg-red-50 border-l-4 border-l-red-400" 
+                      : ""
+                  }
                 />
               </div>
             </div>

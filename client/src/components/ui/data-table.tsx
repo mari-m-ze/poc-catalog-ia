@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -83,6 +83,41 @@ export function DataTable<T extends Record<string, any>>({
       onSearch(term);
     }
   };
+
+  const getSortValue = (item: T, columnId: string): any => {
+    const parts = columnId.split('.');
+    let value = item;
+    
+    for (const part of parts) {
+      if (value && typeof value === 'object' && part in value) {
+        value = value[part];
+      } else {
+        return '';
+      }
+    }
+    
+    if (typeof value === 'string') {
+      return value.toLowerCase();
+    }
+    if (typeof value === 'number') {
+      return value;
+    }
+    
+    return String(value).toLowerCase();
+  };
+
+  const sortedData = useMemo(() => {
+    if (!sortColumn) return data;
+    
+    return [...data].sort((a, b) => {
+      const aValue = getSortValue(a, sortColumn);
+      const bValue = getSortValue(b, sortColumn);
+      
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [data, sortColumn, sortDirection]);
 
   useEffect(() => {
     if (onSelectedItemsChange) {
@@ -222,7 +257,7 @@ export function DataTable<T extends Record<string, any>>({
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((item, i) => (
+              sortedData.map((item, i) => (
                 <TableRow
                   key={i}
                   className={onRowClick ? "cursor-pointer hover:bg-amber-50" : ""}

@@ -119,6 +119,7 @@ export type WineAttributes = {
     confidence: number;
   };
   status: ProcessingStatus;
+  confidence: number|null;
 };
 
 export type WineInput = {
@@ -135,3 +136,19 @@ export const WineEnums = {
   Closures,
   WinePairings
 } as const;
+
+
+export function calculateOverallConfidence(attributes: WineAttributes): number {
+  const confidences = [
+    attributes.pais.confidence,
+    attributes.tipo.confidence,
+    attributes.classificacao.confidence,
+    attributes.uva.confidence,
+    attributes.tamanho.confidence,
+    attributes.tampa.confidence,
+    attributes.harmonizacao.confidence
+  ];
+  
+  const average = confidences.reduce((sum, conf) => sum + conf, 0) / confidences.length;
+  return Math.round(average);
+}
