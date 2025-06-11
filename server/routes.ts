@@ -1,20 +1,10 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { 
-  AIEnhancementSchema, 
-  InsertBeerProduct, 
-  insertBeerProductSchema,
-  AppSettingsSchema,
-  aiProviders,
-  CSVBeerProduct
-} from "@shared/schema";
+import { AppSettingsSchema, aiProviders } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { embalagens, marcas, classificacoes, tamanhos, teoresAlcoolicos, origens, retornaveis, tipos } from "@shared/schema";
 import { config } from "./config";
-import { db } from "./db";
-import { sql } from "drizzle-orm";
 import { generateWineAttributes, processWineCSV, generateWineAttributesCSV } from "./api/wine-service";
 import * as path from 'path';
 import * as fs from 'fs';

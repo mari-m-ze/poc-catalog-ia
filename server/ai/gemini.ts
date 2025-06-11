@@ -12,9 +12,7 @@ import {
 } from '../domain/wine';
 import { validateEnum, validateMultipleEnum, validateConfidence } from '../domain/helpers';
 import { generateWineAttributesPrompt, generateWineAttributesPromptSingle } from '../domain/prompts';
-import { marcas, tamanhos, embalagens, classificacoes, teoresAlcoolicos, origens, retornaveis, tipos } from '@shared/schema';
 import { log } from '../vite';
-import openai from 'openai';
 
 // O modelo mais recente é o gemini-pro
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -71,7 +69,7 @@ export async function generateWineAttribute(produto: WineInput): Promise<WineAtt
     const content = result.response.text();
     
     const parsedResult = await parseGeminiResponse(content, false);
-    
+    log('Gemini parsed result:', parsedResult);
     return {
       id: parsedResult.id.toString(),
       nome: parsedResult.nome,
@@ -119,11 +117,12 @@ export async function generateWineAttributes(produtos: WineInput[]): Promise<Win
 
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = generateWineAttributesPrompt(produtos);
+    log('Gemini prompt:', prompt);
     const result = await model.generateContent(prompt);
     const content = result.response.text();
     
     const parsedResults = await parseGeminiResponse(content, true);
-    
+    log('Gemini parsed results:', parsedResults);
     return parsedResults.map((result: any) => ({
       id: result.id.toString(),
       nome: result.nome,

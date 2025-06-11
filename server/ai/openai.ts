@@ -1,15 +1,5 @@
 import OpenAI from 'openai';
 import {
-  marcas,
-  tamanhos,
-  embalagens,
-  classificacoes,
-  teoresAlcoolicos,
-  origens,
-  retornaveis,
-  tipos
-} from '@shared/schema';
-import {
   Countries,
   WineTypes,
   Classifications,
@@ -44,7 +34,7 @@ type BeerField = {
 export async function generateWineAttribute(produto: WineInput, confidence: number = 70): Promise<WineAttributes> {
   try {
     const prompt = generateWineAttributesPromptSingle(produto, confidence);
-    log('blalbla', prompt);
+    log('OpenAI prompt:', prompt);
     const completion = await openai.chat.completions.create({
       // model: "gpt-4o",
       model: "gpt-4o-search-preview",

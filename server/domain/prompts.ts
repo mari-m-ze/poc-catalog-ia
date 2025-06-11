@@ -41,7 +41,7 @@ Para cada atributo, forneça um nível de confiança em porcentagem (0 a 100 ret
     
     Retorne APENAS o objeto JSON com os seguintes campos:
   {
-    "id": "id do produto fornecido entre colchetes",
+    "id": "o número do id do produto fornecido entre colchetes (exemplo: 1, 2, 3, etc.)",
     "nome": "nome do produto analisado",
     "pais": {
       "value": "país de origem do vinho",

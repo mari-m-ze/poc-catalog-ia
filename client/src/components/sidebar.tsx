@@ -36,7 +36,7 @@ export function Sidebar() {
         <h2 className="text-xl font-bold text-white flex items-center">
           <img  src={zeExtension} alt="ZE Extension"/>
         </h2>
-        <h1 className="text-2xl text-white font-semibold">Catalogo</h1>
+        <h1 className="text-2xl text-white font-semibold">Catálogo</h1>
         <h2 className="text-sm text-center text-white">Catalog - IA</h2>
       </div>
 
