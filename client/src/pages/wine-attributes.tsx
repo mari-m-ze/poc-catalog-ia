@@ -10,15 +10,15 @@ import { useSettings } from '@/hooks/use-settings';
 // Wine attributes type based on the server structure
 type WineAttributes = {
   id: number;
-  nome: string;
+  title: string;
   status: string;
-  pais: { value: string; confidence: number };
-  tipo: { value: string; confidence: number };
-  classificacao: { value: string; confidence: number };
-  uva: { value: string; confidence: number };
-  tamanho: { value: string; confidence: number };
-  tampa: { value: string; confidence: number };
-  harmonizacao: { values: string[]; confidence: number };
+  country: { value: string; confidence: number };
+  type: { value: string; confidence: number };
+  classification: { value: string; confidence: number };
+  grape_variety: { value: string; confidence: number };
+  size: { value: string; confidence: number };
+  closure: { value: string; confidence: number };
+  pairings: { values: string[]; confidence: number };
   confidence: number|null;
 };
 
@@ -90,13 +90,13 @@ export function WineAttributesPage() {
   // Function to calculate average confidence
   const calculateAverageConfidence = (item: WineAttributes): number => {
     const confidences = [
-      item.pais.confidence,
-      item.tipo.confidence,
-      item.classificacao.confidence,
-      item.uva.confidence,
-      item.tamanho.confidence,
-      item.tampa.confidence,
-      item.harmonizacao.confidence
+      item.country.confidence,
+      item.type.confidence,
+      item.classification.confidence,
+      item.grape_variety.confidence,
+      item.size.confidence,
+      item.closure.confidence,
+      item.pairings.confidence
     ];
     const average = confidences.reduce((sum, conf) => sum + conf, 0) / confidences.length;
     return Math.round(average);
@@ -131,7 +131,7 @@ export function WineAttributesPage() {
       header: 'Nome do Vinho',
       sortable: true,
       cell: (item: WineAttributes) => (
-        <div className="font-medium">{item.nome}</div>
+        <div className="font-medium">{item.title}</div>
       ),
     },
     {
@@ -181,8 +181,8 @@ export function WineAttributesPage() {
       sortable: true,
       cell: (item: WineAttributes) => (
         <div>
-          <div>{item.pais.value}</div>
-          <div className="text-xs text-gray-500">{item.pais.confidence}% conf.</div>
+          <div>{item.country.value}</div>
+          <div className="text-xs text-gray-500">{item.country.confidence}% conf.</div>
         </div>
       ),
     },
@@ -192,8 +192,8 @@ export function WineAttributesPage() {
       sortable: true,
       cell: (item: WineAttributes) => (
         <div>
-          <div>{item.tipo.value}</div>
-          <div className="text-xs text-gray-500">{item.tipo.confidence}% conf.</div>
+          <div>{item.type.value}</div>
+          <div className="text-xs text-gray-500">{item.type.confidence}% conf.</div>
         </div>
       ),
     },
@@ -203,8 +203,8 @@ export function WineAttributesPage() {
       sortable: true,
       cell: (item: WineAttributes) => (
         <div>
-          <div>{item.uva.value}</div>
-          <div className="text-xs text-gray-500">{item.uva.confidence}% conf.</div>
+          <div>{item.grape_variety.value}</div>
+          <div className="text-xs text-gray-500">{item.grape_variety.confidence}% conf.</div>
         </div>
       ),
     },
@@ -214,8 +214,8 @@ export function WineAttributesPage() {
       sortable: true,
       cell: (item: WineAttributes) => (
         <div>
-          <div>{item.classificacao.value}</div>
-          <div className="text-xs text-gray-500">{item.classificacao.confidence}% conf.</div>
+          <div>{item.classification.value}</div>
+          <div className="text-xs text-gray-500">{item.classification.confidence}% conf.</div>
         </div>
       ),
     },
@@ -225,8 +225,8 @@ export function WineAttributesPage() {
       sortable: true,
       cell: (item: WineAttributes) => (
         <div>
-          <div>{item.tamanho.value}</div>
-          <div className="text-xs text-gray-500">{item.tamanho.confidence}% conf.</div>
+          <div>{item.size.value}</div>
+          <div className="text-xs text-gray-500">{item.size.confidence}% conf.</div>
         </div>
       ),
     },
@@ -236,8 +236,8 @@ export function WineAttributesPage() {
       sortable: true,
       cell: (item: WineAttributes) => (
         <div>
-          <div>{item.tampa.value}</div>
-          <div className="text-xs text-gray-500">{item.tampa.confidence}% conf.</div>
+          <div>{item.closure.value}</div>
+          <div className="text-xs text-gray-500">{item.closure.confidence}% conf.</div>
         </div>
       ),
     },
@@ -246,8 +246,8 @@ export function WineAttributesPage() {
       header: 'Harmonização',
       cell: (item: WineAttributes) => (
         <div>
-          <div className="text-sm">{item.harmonizacao.values.join(', ')}</div>
-          <div className="text-xs text-gray-500">{item.harmonizacao.confidence}% conf.</div>
+          <div className="text-sm">{item.pairings.values.join(', ')}</div>
+          <div className="text-xs text-gray-500">{item.pairings.confidence}% conf.</div>
         </div>
       ),
     },

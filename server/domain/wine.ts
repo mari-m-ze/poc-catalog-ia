@@ -1,16 +1,13 @@
 export const Countries = [
   'Argentina',
-  'Australia',
   'Chile',
-  'França',
   'Itália',
-  'Portugal',
   'Espanha',
-  'Estados Unidos',
-  'África do Sul',
+  'França',
+  'Portugal',
   'Brasil',
-  'Nova Zelândia',
-  'Alemanha'
+  'Uruguai',
+  'Outros'
 ] as const;
 
 export const WineTypes = [
@@ -29,15 +26,6 @@ export const Classifications = [
   'Brut'
 ] as const;
 
-// export const Suppliers = [
-//   'Wine Co.',
-//   'Global Wines',
-//   'Vinhos & Cia',
-//   'Euro Wines',
-//   'South American Imports',
-//   'Premium Wine Imports',
-//   'Direct Wines'
-// ] as const;
 
 export const GrapeVarieties = [
   'Cabernet Sauvignon',
@@ -100,21 +88,22 @@ export type WineAttributeWithConfidence<T> = {
 
 export const ProcessingStatus = {
   OK: 'OK',
-  Error: 'Error'
+  Error: 'Error',
+  Pending: 'Pending'
 } as const;
 
 export type ProcessingStatus = (typeof ProcessingStatus)[keyof typeof ProcessingStatus];
 
 export type WineAttributes = {
   id: string;
-  nome: string;
-  pais: WineAttributeWithConfidence<Country | ''>;
-  tipo: WineAttributeWithConfidence<WineType | ''>;
-  classificacao: WineAttributeWithConfidence<Classification | ''>;
-  uva: WineAttributeWithConfidence<GrapeVariety | ''>;
-  tamanho: WineAttributeWithConfidence<Size | ''>;
-  tampa: WineAttributeWithConfidence<Closure | ''>;
-  harmonizacao: {
+  title: string;
+  country: WineAttributeWithConfidence<Country | ''>;
+  type: WineAttributeWithConfidence<WineType | ''>;
+  classification: WineAttributeWithConfidence<Classification | ''>;
+  grape_variety: WineAttributeWithConfidence<GrapeVariety | ''>;
+  size: WineAttributeWithConfidence<Size | ''>;
+  closure: WineAttributeWithConfidence<Closure | ''>;
+  pairings: {
     values: WinePairing[];
     confidence: number;
   };
@@ -124,7 +113,7 @@ export type WineAttributes = {
 
 export type WineInput = {
   id: number;
-  nome: string;
+  title: string;
 };
 
 export const WineEnums = {
@@ -140,13 +129,13 @@ export const WineEnums = {
 
 export function calculateOverallConfidence(attributes: WineAttributes): number {
   const confidences = [
-    attributes.pais.confidence,
-    attributes.tipo.confidence,
-    attributes.classificacao.confidence,
-    attributes.uva.confidence,
-    attributes.tamanho.confidence,
-    attributes.tampa.confidence,
-    attributes.harmonizacao.confidence
+    attributes.country.confidence,
+    attributes.type.confidence,
+    attributes.classification.confidence,
+    attributes.grape_variety.confidence,
+    attributes.size.confidence,
+    attributes.closure.confidence,
+    attributes.pairings.confidence
   ];
   
   const average = confidences.reduce((sum, conf) => sum + conf, 0) / confidences.length;

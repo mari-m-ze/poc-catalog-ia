@@ -14,7 +14,7 @@ const CONFIDENCE = 50;
 
 export function generateWineAttributesPromptSingle(product: WineInput, confidence: number = CONFIDENCE): string {
   return `
-    Para o produto abaixo use a internet (ou base de dados confiável) para identificar os atributos solicitados. Aplique máxima profundidade de busca. 
+    Para o produto abaixo use a internet (ou base de dados confiável) para identificar os atributos solicitados.
 
 Use APENAS os valores fornecidos em cada categoria com nível de confiabilidade acima de ${confidence}%. 'Outras', 'Outros', 'Outra', 'Outro' podem ser utilizados quando não se encaixarem nos demais valores e tiverem essa confiança de ${confidence}% ou mais. Se não tiver confiança de ${confidence}% ou mais, retorne uma string vazia ("").
 
@@ -27,7 +27,7 @@ Para cada atributo, forneça um nível de confiança em porcentagem (0 a 100 ret
 - 70% - Alta confiança (muito provável)
 - 100% - Certeza absoluta (explícito no nome ou fonte confiável)
 
-    Produto: [ID: ${product.id}] Nome:${product.nome} 
+    Produto: ID: ${product.id} Nome:${product.title} 
     
     Categorias disponíveis:
     

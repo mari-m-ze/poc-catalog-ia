@@ -1,4 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from "@google/genai";
+
 import {
   Countries,
   WineTypes,
@@ -16,20 +18,30 @@ import { log } from '../vite';
 
 // O modelo mais recente é o gemini-pro
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY});
 
 function createDefaultWineAttributes(produto: WineInput): WineAttributes {
   return {
     id: produto.id.toString(),
-    nome: produto.nome,
+    title: produto.title,
     status: 'Error',
-    pais: { value: '', confidence: 0 },
-    tipo: { value: '', confidence: 0 },
-    classificacao: { value: '', confidence: 0 },
-    uva: { value: '', confidence: 0 },
-    tamanho: { value: '', confidence: 0 },
-    tampa: { value: '', confidence: 0 },
-    harmonizacao: { values: [], confidence: 0 }
+    country: { value: '', confidence: 0 },
+    type: { value: '', confidence: 0 },
+    classification: { value: '', confidence: 0 },
+    grape_variety: { value: '', confidence: 0 },
+    size: { value: '', confidence: 0 },
+    closure: { value: '', confidence: 0 },
+    pairings: { values: [], confidence: 0 },
+    confidence: null
   };
+}
+
+function cleanId(id: any): string {
+  if (!id) return '';
+  let cleanId = String(id);
+  // Remove brackets, quotes, and other unwanted characters
+  cleanId = cleanId.replace(/[\[\]"']/g, '').trim();
+  return cleanId;
 }
 
 async function parseGeminiResponse(content: string | null, isArray: boolean = false): Promise<any> {
@@ -38,7 +50,10 @@ async function parseGeminiResponse(content: string | null, isArray: boolean = fa
   }
 
   try {
-    const jsonMatch = content.match(isArray ? /\[\s*\{[\s\S]*\}\s*\]/ : /\{[\s\S]*\}/);
+    // Clean up the content first - remove markdown code blocks if present
+    let cleanContent = content.replace(/```json\s*|\s*```/g, '').trim();
+    
+    const jsonMatch = cleanContent.match(isArray ? /\[\s*\{[\s\S]*\}\s*\]/ : /\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error(`No JSON ${isArray ? 'array' : 'object'} found in response`);
     }
@@ -50,6 +65,7 @@ async function parseGeminiResponse(content: string | null, isArray: boolean = fa
     return parsed;
   } catch (error) {
     console.error('Error parsing Gemini response:', error);
+    console.error('Raw content:', content);
     throw error;
   }
 }
@@ -61,47 +77,56 @@ export async function generateWineAttribute(produto: WineInput): Promise<WineAtt
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY não está configurada');
     }
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
-    /* const model = genAI.getGenerativeModel({ model: 'gemini-pro' }); */
     const prompt = generateWineAttributesPromptSingle(produto);
-    const result = await model.generateContent(prompt);
-    log('Gemini result:', JSON.stringify(result, null, 2));
-    const content = result.response.text();
     
-    const parsedResult = await parseGeminiResponse(content, false);
+    log('Gemini prompt:', prompt);
+    const result = await ai.models.generateContent({
+      model: "gemini-2.0-flash-lite",
+      contents: [
+        prompt,
+      ],
+      /* config: {
+        tools: [{googleSearch: {}}],
+      }, */
+    });
+
+    log('Gemini result:', JSON.stringify(result, null, 2));
+    
+    const parsedResult = await parseGeminiResponse(result.text || null, false);
     log('Gemini parsed result:', parsedResult);
     return {
-      id: parsedResult.id.toString(),
-      nome: parsedResult.nome,
+      id: cleanId(parsedResult.id),
+      title: parsedResult.nome,
       status: 'OK',
-      pais: {
+      country: {
         value: validateEnum(parsedResult.pais.value, Countries),
         confidence: validateConfidence(parsedResult.pais.confidence)
       },
-      tipo: {
+      type: {
         value: validateEnum(parsedResult.tipo.value, WineTypes),
         confidence: validateConfidence(parsedResult.tipo.confidence)
       },
-      classificacao: {
+      classification: {
         value: validateEnum(parsedResult.classificacao.value, Classifications),
         confidence: validateConfidence(parsedResult.classificacao.confidence)
       },
-      uva: {
+      grape_variety: {
         value: validateEnum(parsedResult.uva.value, GrapeVarieties),
         confidence: validateConfidence(parsedResult.uva.confidence)
       },
-      tamanho: {
+      size: {
         value: validateEnum(parsedResult.tamanho.value, Sizes),
         confidence: validateConfidence(parsedResult.tamanho.confidence)
       },
-      tampa: {
+      closure: {
         value: validateEnum(parsedResult.tampa.value, Closures),
         confidence: validateConfidence(parsedResult.tampa.confidence)
       },
-      harmonizacao: {
+      pairings: {
         values: validateMultipleEnum(parsedResult.harmonizacao.values, WinePairings),
         confidence: validateConfidence(parsedResult.harmonizacao.confidence)
-      }
+      },
+      confidence: null
     };
   } catch (error) {
     console.error('Error generating wine attribute:', error);
@@ -124,37 +149,38 @@ export async function generateWineAttributes(produtos: WineInput[]): Promise<Win
     const parsedResults = await parseGeminiResponse(content, true);
     log('Gemini parsed results:', parsedResults);
     return parsedResults.map((result: any) => ({
-      id: result.id.toString(),
-      nome: result.nome,
+      id: cleanId(result.id),
+      title: result.nome,
       status: 'OK',
-      pais: {
+      country: {
         value: validateEnum(result.pais.value, Countries),
         confidence: validateConfidence(result.pais.confidence)
       },
-      tipo: {
+      type: {
         value: validateEnum(result.tipo.value, WineTypes),
         confidence: validateConfidence(result.tipo.confidence)
       },
-      classificacao: {
+      classification: {
         value: validateEnum(result.classificacao.value, Classifications),
         confidence: validateConfidence(result.classificacao.confidence)
       },
-      uva: {
+      grape_variety: {
         value: validateEnum(result.uva.value, GrapeVarieties),
         confidence: validateConfidence(result.uva.confidence)
       },
-      tamanho: {
+      size: {
         value: validateEnum(result.tamanho.value, Sizes),
         confidence: validateConfidence(result.tamanho.confidence)
       },
-      tampa: {
+      closure: {
         value: validateEnum(result.tampa.value, Closures),
         confidence: validateConfidence(result.tampa.confidence)
       },
-      harmonizacao: {
+      pairings: {
         values: validateMultipleEnum(result.harmonizacao.values, WinePairings),
         confidence: validateConfidence(result.harmonizacao.confidence)
-      }
+      },
+      confidence: null
     }));
   } catch (error) {
     console.error('Error generating wine attributes:', error);
