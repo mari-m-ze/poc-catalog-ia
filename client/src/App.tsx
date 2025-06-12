@@ -5,6 +5,8 @@ import { Toaster } from "./components/ui/toaster";
 import NotFound from "./pages/not-found";
 import Settings from "./pages/settings";
 import { WineAttributesPage } from "./pages/wine-attributes";
+import { WineEnrichmentPage } from "./pages/wine-enrichment";
+import { WineComparisonPage } from "./pages/wine-comparison";
 
 function Router() {
   return (
@@ -14,6 +16,8 @@ function Router() {
       </Route>
       <Route path="/settings" component={Settings} />
       <Route path="/wine-attributes" component={WineAttributesPage} />
+      <Route path="/wine-enrichment" component={WineEnrichmentPage} />
+      <Route path="/wine-comparison" component={WineComparisonPage} />
       <Route component={NotFound} />
     </Switch>
   );

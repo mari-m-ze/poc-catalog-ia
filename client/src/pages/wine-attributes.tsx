@@ -20,6 +20,7 @@ type WineAttributes = {
   closure: { value: string; confidence: number };
   pairings: { values: string[]; confidence: number };
   confidence: number|null;
+  error?: string | null;
 };
 
 export function WineAttributesPage() {
@@ -248,6 +249,19 @@ export function WineAttributesPage() {
         <div>
           <div className="text-sm">{item.pairings.values.join(', ')}</div>
           <div className="text-xs text-gray-500">{item.pairings.confidence}% conf.</div>
+        </div>
+      ),
+    },
+    {
+      id: 'error',
+      header: 'Erro',
+      cell: (item: WineAttributes) => (
+        <div>
+          {item.error && (
+            <div className="text-xs text-red-600 bg-red-50 p-2 rounded border">
+              {item.error}
+            </div>
+          )}
         </div>
       ),
     },

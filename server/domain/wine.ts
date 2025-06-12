@@ -109,6 +109,7 @@ export type WineAttributes = {
   };
   status: ProcessingStatus;
   confidence: number|null;
+  error?: string | null;
 };
 
 export type WineInput = {

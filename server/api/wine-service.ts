@@ -223,6 +223,8 @@ export async function processWineCSV(fileBuffer: Buffer): Promise<ProcessingResu
         if (result.confidence === null || result.confidence === undefined) {
           result.confidence = calculateOverallConfidence(result);
         }
+        // Ensure no error field for successful results
+        result.error = null;
         results.push(result);
         
         const enrichmentRecord = createEnrichmentRecord(executionId, input, result, currentProvider);
@@ -246,6 +248,23 @@ export async function processWineCSV(fileBuffer: Buffer): Promise<ProcessingResu
           console.error(`Failed to save error record for "${input.title}":`, dbError);
         }
         
+        // Create error result for API response
+        const errorResult: WineAttributes = {
+          id: input.id.toString(),
+          title: input.title,
+          status: 'Error',
+          country: { value: '', confidence: 0 },
+          type: { value: '', confidence: 0 },
+          classification: { value: '', confidence: 0 },
+          grape_variety: { value: '', confidence: 0 },
+          size: { value: '', confidence: 0 },
+          closure: { value: '', confidence: 0 },
+          pairings: { values: [], confidence: 0 },
+          confidence: 0,
+          error: errorObj.message
+        };
+        
+        results.push(errorResult);
         failureCount++;
       }
     }
