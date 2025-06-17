@@ -11,7 +11,7 @@ import {
   type WineInput
 } from '../domain/wine'; 
 import { validateEnum, validateMultipleEnum, validateConfidence } from '../domain/helpers';
-import { generateWineAttributesPrompt } from '../domain/prompts';
+import { generateWineAttributesPrompt, generateWineAttributesPromptSingle } from '../domain/prompts';
 // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -79,80 +79,47 @@ export async function generateWineAttributes(produtos: WineInput[]): Promise<Win
 
     } catch (jsonError) {
       console.error('Error parsing Anthropic response:', jsonError);
-      return produtos.map(() => ({
-        id: '',
-        title: '',
-        pais: { value: '', confidence: 0 },
-        tipo: { value: '', confidence: 0 },
-        classificacao: { value: '', confidence: 0 },
-        uva: { value: '', confidence: 0 },
-        tamanho: { value: '', confidence: 0 },
-        tampa: { value: '', confidence: 0 },
-        harmonizacao: { values: [], confidence: 0 }
-      }));
+      throw jsonError;
     }
   } catch (error) {
     console.error('Error generating wine attributes:', error);
-    return produtos.map(() => ({
-      id: '',
-      title: '',
-      pais: { value: '', confidence: 0 },
-      tipo: { value: '', confidence: 0 },
-      classificacao: { value: '', confidence: 0 },
-      uva: { value: '', confidence: 0 },
-      tamanho: { value: '', confidence: 0 },
-      tampa: { value: '', confidence: 0 },
-      harmonizacao: { values: [], confidence: 0 }
-    }));
+    throw error;
   }
 }
 
+export async function generateWineAttribute(produto: WineInput): Promise<WineAttributes> {
+  const prompt = generateWineAttributesPromptSingle(produto);
+  const message = await anthropic.messages.create({
+    model: 'claude-3-7-sonnet-20250219',
+    max_tokens: 1000,
+    messages: [{ role: 'user', content: prompt }],
+  });
 
-export async function enhanceBeerProduct(beerInfo: BeerField, enhancementType: "description" | "tags" | "all" | "fields" | "complete"): Promise<{ 
-  description?: string, 
-  tags?: string,
-  fields?: {
-    marca?: string;
-    tamanho?: string;
-    embalagem?: string;
-    classificacao?: string;
-    teor_alcoolico?: string;
-    origem?: string;
-    retornavel?: string;
-    tipo?: string;
-  }
-}> {
+  const content = message.content[0].type === 'text' ? message.content[0].text : '';
+  
   try {
-    const result: { 
-      description?: string, 
-      tags?: string,
-      fields?: {
-        marca?: string;
-        tamanho?: string;
-        embalagem?: string;
-        classificacao?: string;
-        teor_alcoolico?: string;
-        origem?: string;
-        retornavel?: string;
-        tipo?: string;
-      }
-    } = {};
-    
-    if (enhancementType === "description" || enhancementType === "all" || enhancementType === "complete") {
-      result.description = await generateBeerDescription(beerInfo);
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No JSON found in response');
     }
-    
-    if (enhancementType === "tags" || enhancementType === "all" || enhancementType === "complete") {
-      result.tags = await generateBeerTags(beerInfo);
-    }
-    
-    if (enhancementType === "fields" || enhancementType === "complete") {
-      result.fields = await generateBeerFields(beerInfo);
-    }
-    
-    return result;
-  } catch (error) {
-    console.error('Error enhancing beer product:', error);
-    return {};
+
+    const parsedResults = JSON.parse(jsonMatch[0]);
+    log('Anthropic parsed results:', parsedResults);
+    return {
+      id: parsedResults.id,
+      title: parsedResults.nome,
+      country: { value: parsedResults.pais.value, confidence: parsedResults.pais.confidence },
+      type: { value: parsedResults.tipo.value, confidence: parsedResults.tipo.confidence },
+      classification: { value: parsedResults.classificacao.value, confidence: parsedResults.classificacao.confidence },
+      grape_variety: { value: parsedResults.uva.value, confidence: parsedResults.uva.confidence },
+      size: { value: parsedResults.tamanho.value, confidence: parsedResults.tamanho.confidence },
+      closure: { value: parsedResults.tampa.value, confidence: parsedResults.tampa.confidence },
+      pairings: { values: parsedResults.harmonizacao.values, confidence: parsedResults.harmonizacao.confidence },
+      status: 'OK',
+      confidence: null
+    };
+  } catch (jsonError) {
+    console.error('Error parsing Anthropic response:', jsonError);
+    throw jsonError;
   }
 }

@@ -11,8 +11,69 @@ import {
 import { WineInput } from './wine';
 
 const CONFIDENCE = 50;
-
 export function generateWineAttributesPromptSingle(product: WineInput, confidence: number = CONFIDENCE): string {
+  return `
+    Pesquisar o nome do produto de vinho a seguir e gerar os atributos listados abaixo, utilizando fontes confiáveis da internet sempre que necessário. Use APENAS os valores permitidos em cada categoria. Se não encontrar um valor adequado mesmo após a pesquisa, retorne uma string vazia "").
+    IMPORTANTE: Use pesquisa na web para determinar com maior precisão os atributos do vinho (incluindo fabricante, tipo, país de origem, etc.), desde que as informações estejam entre os valores permitidos e venham de fontes confiáveis (como sites oficiais de fabricantes, supermercados ou lojas especializadas).
+
+Para o campo harmonização, é possível retornar múltiplos valores da lista fornecida.
+Para o campo uva, se for uma mistura de uvas, retorne 'Blend'.    
+Para cada atributo, forneça um nível de confiança em porcentagem (0 a 100 retornando como número e não string), onde:
+- 0% - Nenhuma confiança (chute)
+- 100% - Certeza absoluta (explícito no nome ou fonte confiável)
+
+    Produto: ID: ${product.id} Nome:${product.title} 
+    
+    Categorias disponíveis:
+    
+    País de Origem: ${Countries.join(', ')}
+    Tipo de Vinho: ${WineTypes.join(', ')}
+    Classificação: ${Classifications.join(', ')}
+    Uva: ${GrapeVarieties.join(', ')} (use "Blend" para misturas de uvas mesmo que não sejam uvas listadas anteriormente)
+    Tamanho: ${Sizes.join(', ')}
+    Tampa: ${Closures.join(', ')}
+    Harmonização: ${WinePairings.join(', ')}
+    
+    Retorne APENAS o objeto JSON com os seguintes campos:
+  {
+    "id": "o número do id do produto fornecido entre colchetes (exemplo: 1, 2, 3, etc.)",
+    "nome": "nome do produto analisado",
+    "pais": {
+      "value": "país de origem do vinho",
+      "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
+    },
+    "tipo": {
+      "value": "tipo do vinho",
+      "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
+    },
+    "classificacao": {
+      "value": "classificação do vinho",
+      "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
+    },
+    "uva": {
+      "value": "variedade da uva",
+      "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
+    },
+    "tamanho": {
+      "value": "tamanho da garrafa",
+      "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
+    },
+    "tampa": {
+      "value": "tipo de tampa",
+      "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
+    },
+    "harmonizacao": {
+      "values": ["harmonizações sugeridas"],
+      "confidence": "nível de confiança de 0 a 100 (em porcentagem)"
+    }
+  }
+
+IMPORTANTE: Retorne SOMENTE o objeto JSON diretamente, sem explicações, sem texto adicional, e sem marcar o código com blocos de markdown como \`\`\`json. O output deve ser um JSON puro, começando com { e terminando com }.
+
+    
+  `;
+}
+export function generateWineAttributesPromptSingle_v2(product: WineInput, confidence: number = CONFIDENCE): string {
   return `
     Para o produto abaixo use a internet (ou base de dados confiável) para identificar os atributos solicitados.
 
@@ -22,9 +83,6 @@ Para o campo harmonização, é possível retornar múltiplos valores da lista f
 Para o campo uva, se for uma mistura de uvas, retorne 'Blend'.    
 Para cada atributo, forneça um nível de confiança em porcentagem (0 a 100 retornando como número e não string), onde:
 - 0% - Nenhuma confiança (chute)
-- 30% - Baixa confiança (pouca certeza)
-- 50% - Média confiança (provável)
-- 70% - Alta confiança (muito provável)
 - 100% - Certeza absoluta (explícito no nome ou fonte confiável)
 
     Produto: ID: ${product.id} Nome:${product.title} 

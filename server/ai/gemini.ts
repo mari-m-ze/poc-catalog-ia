@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GoogleGenAI } from "@google/genai";
+import { FunctionCallingConfigMode, GoogleGenAI } from "@google/genai";
+import Bottleneck from 'bottleneck';
 
 import {
   Countries,
@@ -20,21 +21,13 @@ import { log } from '../vite';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY});
 
-function createDefaultWineAttributes(produto: WineInput): WineAttributes {
-  return {
-    id: produto.id.toString(),
-    title: produto.title,
-    status: 'Error',
-    country: { value: '', confidence: 0 },
-    type: { value: '', confidence: 0 },
-    classification: { value: '', confidence: 0 },
-    grape_variety: { value: '', confidence: 0 },
-    size: { value: '', confidence: 0 },
-    closure: { value: '', confidence: 0 },
-    pairings: { values: [], confidence: 0 },
-    confidence: null
-  };
-}
+// Create a rate limiter: 30 requests per minute
+const limiter = new Bottleneck({
+  reservoir: 30, // initial number of requests
+  reservoirRefreshAmount: 30,
+  reservoirRefreshInterval: 60 * 1000, // refresh every minute
+  maxConcurrent: 1, // optional: 1 at a time to avoid burst
+});
 
 function cleanId(id: any): string {
   if (!id) return '';
@@ -58,7 +51,24 @@ async function parseGeminiResponse(content: string | null, isArray: boolean = fa
       throw new Error(`No JSON ${isArray ? 'array' : 'object'} found in response`);
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    let jsonString = jsonMatch[0];
+
+    // Remove extra backslashes if present (double-escaped JSON)
+    if (jsonString.includes('\\"')) {
+      jsonString = jsonString.replace(/\\/g, '');
+    }
+
+    // If still a stringified JSON, parse again
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonString);
+      if (typeof parsed === 'string') {
+        parsed = JSON.parse(parsed);
+      }
+    } catch (e) {
+      throw new Error('Failed to parse JSON after cleaning: ' + (e instanceof Error ? e.message : String(e)));
+    }
+
     if (isArray && !Array.isArray(parsed)) {
       throw new Error('Response is not an array');
     }
@@ -71,8 +81,6 @@ async function parseGeminiResponse(content: string | null, isArray: boolean = fa
 }
 
 export async function generateWineAttribute(produto: WineInput): Promise<WineAttributes> {
-
-
   try {
     if (!process.env.GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY não está configurada');
@@ -80,15 +88,21 @@ export async function generateWineAttribute(produto: WineInput): Promise<WineAtt
     const prompt = generateWineAttributesPromptSingle(produto);
     
     log('Gemini prompt:', prompt);
-    const result = await ai.models.generateContent({
+    // Use limiter to schedule the Gemini API call
+    const result = await limiter.schedule(() => ai.models.generateContent({
       model: "gemini-2.0-flash-lite",
       contents: [
         prompt,
       ],
-      /* config: {
-        tools: [{googleSearch: {}}],
-      }, */
-    });
+      config: {
+        tools: [{googleSearch: {}}], 
+        toolConfig: {
+          functionCallingConfig: {
+              mode: FunctionCallingConfigMode.AUTO
+          }
+        }
+      }, 
+    }));
 
     log('Gemini result:', JSON.stringify(result, null, 2));
     
@@ -129,8 +143,10 @@ export async function generateWineAttribute(produto: WineInput): Promise<WineAtt
       confidence: null
     };
   } catch (error) {
-    console.error('Error generating wine attribute:', error);
-    return createDefaultWineAttributes(produto);
+    console.error('Error in Gemini generateWineAttribute:', error);
+    console.error('Product input:', produto);
+    console.error('Error details:', error instanceof Error ? error.message : String(error));
+    throw error; // Re-throw to let wine-service handle it
   }
 }
 
@@ -143,7 +159,8 @@ export async function generateWineAttributes(produtos: WineInput[]): Promise<Win
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = generateWineAttributesPrompt(produtos);
     log('Gemini prompt:', prompt);
-    const result = await model.generateContent(prompt);
+    // Use limiter to schedule the Gemini API call
+    const result = await limiter.schedule(() => model.generateContent(prompt));
     const content = result.response.text();
     
     const parsedResults = await parseGeminiResponse(content, true);
@@ -183,7 +200,9 @@ export async function generateWineAttributes(produtos: WineInput[]): Promise<Win
       confidence: null
     }));
   } catch (error) {
-    console.error('Error generating wine attributes:', error);
-    return produtos.map(createDefaultWineAttributes);
+    console.error('Error in Gemini generateWineAttributes (batch):', error);
+    console.error('Product inputs:', produtos);
+    console.error('Error details:', error instanceof Error ? error.message : String(error));
+    throw error; // Re-throw to let wine-service handle it
   }
 }

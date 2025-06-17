@@ -7,6 +7,7 @@ import Settings from "./pages/settings";
 import { WineAttributesPage } from "./pages/wine-attributes";
 import { WineEnrichmentPage } from "./pages/wine-enrichment";
 import { WineComparisonPage } from "./pages/wine-comparison";
+import WineAccuracy from "./pages/wine-accuracy";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/wine-attributes" component={WineAttributesPage} />
       <Route path="/wine-enrichment" component={WineEnrichmentPage} />
       <Route path="/wine-comparison" component={WineComparisonPage} />
+      <Route path="/wine-accuracy" component={WineAccuracy} />
       <Route component={NotFound} />
     </Switch>
   );

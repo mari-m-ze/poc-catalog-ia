@@ -101,20 +101,11 @@ export async function generateWineAttribute(produto: WineInput, confidence: numb
       confidence: null
     };
   } catch (error: unknown) {
-    log('ERROR!', error instanceof Error ? error.message : String(error));
-    // Return default values if there's an error
-    return {
-      id: produto.id.toString(),
-      title: produto.title,
-      country: { value: '', confidence: 0 },
-      type: { value: '', confidence: 0 },
-      classification: { value: '', confidence: 0 },
-      grape_variety: { value: '', confidence: 0 },
-      size: { value: '', confidence: 0 },
-      closure: { value: '', confidence: 0 },
-      pairings: { values: [], confidence: 0 },
-      status: 'Error'
-    };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error in OpenAI generateWineAttribute:', errorMessage);
+    console.error('Product input:', produto);
+    console.error('Full error details:', error);
+    throw error; // Re-throw to let wine-service handle it
   }
 }
 export async function generateWineAttributes(produtos: WineInput[]): Promise<WineAttributes[]> {
@@ -160,49 +151,40 @@ export async function generateWineAttributes(produtos: WineInput[]): Promise<Win
         value: validateEnum(result.pais.value, Countries),
         confidence: validateConfidence(result.pais.confidence)
       },
-      tipo: {
+      type: {
         value: validateEnum(result.tipo.value, WineTypes),
         confidence: validateConfidence(result.tipo.confidence)
       },
-      classificacao: {
+      classification: {
         value: validateEnum(result.classificacao.value, Classifications),
         confidence: validateConfidence(result.classificacao.confidence)
       },
-      uva: {
+      grape_variety: {
         value: validateEnum(result.uva.value, GrapeVarieties),
         confidence: validateConfidence(result.uva.confidence)
       },
-      tamanho: {
+      size: {
         value: validateEnum(result.tamanho.value, Sizes),
         confidence: validateConfidence(result.tamanho.confidence)
       },
-      tampa: {
+      closure: {
         value: validateEnum(result.tampa.value, Closures),
         confidence: validateConfidence(result.tampa.confidence)
       },
-      harmonizacao: {
+      pairings: {
         values: validateMultipleEnum(result.harmonizacao.values, WinePairings),
         confidence: validateConfidence(result.harmonizacao.confidence)
       },
-      status: 'OK'
+      status: 'OK',
+      confidence: null
     }));
 
   } catch (error: unknown) {
-
-    console.error('Error generating wine attributes:', error instanceof Error ? error.message : String(error));
-    // Return default values if there's an error
-    return produtos.map((produto) => ({
-      id: produto.id.toString(),
-      nome: produto.nome,
-      pais: { value: '', confidence: 0 },
-      tipo: { value: '', confidence: 0 },
-      classificacao: { value: '', confidence: 0 },
-      uva: { value: '', confidence: 0 },
-      tamanho: { value: '', confidence: 0 },
-      tampa: { value: '', confidence: 0 },
-      harmonizacao: { values: [], confidence: 0 },
-      status: 'Error'
-    }));
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error in OpenAI generateWineAttributes (batch):', errorMessage);
+    console.error('Product inputs:', produtos);
+    console.error('Full error details:', error);
+    throw error; // Re-throw to let wine-service handle it
   }
 }
 

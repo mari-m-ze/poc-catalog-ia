@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
-import { Home, Settings, FileSpreadsheet, LayoutGrid, Wine, Database, TrendingUp } from 'lucide-react';
+import { Home, Settings, FileSpreadsheet, LayoutGrid, Wine, Database, TrendingUp, Target } from 'lucide-react';
 import zeExtension from '@/assets/images/ze_extension.png';
 
 export function Sidebar() {
@@ -32,6 +32,11 @@ export function Sidebar() {
       name: 'Comparação de Atributos',
       icon: TrendingUp,
       path: '/wine-comparison',
+    },
+    {
+      name: 'Análise de Acurácia',
+      icon: Target,
+      path: '/wine-accuracy',
     },
     {
       name: 'Configurações',

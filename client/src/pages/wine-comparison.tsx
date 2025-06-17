@@ -34,7 +34,7 @@ type ComparisonStats = {
   grape_variety: AttributeStats;
   size: AttributeStats;
   closure: AttributeStats;
-  pairings: AttributeStats;
+  // pairings: AttributeStats;
 };
 
 type ComparisonData = {
@@ -113,12 +113,12 @@ export function WineComparisonPage() {
           Math.round((stats.closure.matches / stats.closure.total_with_original) * 100) : 0,
         total: stats.closure.total_with_original
       },
-      {
-        attribute: 'Harmonização',
-        accuracy: stats.pairings.total_with_original > 0 ? 
-          Math.round((stats.pairings.matches / stats.pairings.total_with_original) * 100) : 0,
-        total: stats.pairings.total_with_original
-      }
+      // {
+      //   attribute: 'Harmonização',
+      //   accuracy: stats.pairings.total_with_original > 0 ? 
+      //     Math.round((stats.pairings.matches / stats.pairings.total_with_original) * 100) : 0,
+      //   total: stats.pairings.total_with_original
+      // }
     ];
   };
 
@@ -159,11 +159,11 @@ export function WineComparisonPage() {
         ai_coverage: Math.round((stats.closure.ai_filled / total) * 100),
         original_coverage: Math.round((stats.closure.original_filled / total) * 100)
       },
-      {
-        attribute: 'Harmonização',
-        ai_coverage: Math.round((stats.pairings.ai_filled / total) * 100),
-        original_coverage: Math.round((stats.pairings.original_filled / total) * 100)
-      }
+      // {
+      //   attribute: 'Harmonização',
+      //   ai_coverage: Math.round((stats.pairings.ai_filled / total) * 100),
+      //   original_coverage: Math.round((stats.pairings.original_filled / total) * 100)
+      // }
     ];
   };
 
@@ -171,7 +171,7 @@ export function WineComparisonPage() {
     if (!comparisonData) return { totalProcessed: 0, averageAccuracy: 0, totalMatches: 0 };
     
     const stats = comparisonData.statistics;
-    const attributes = ['country', 'type', 'classification', 'grape_variety', 'size', 'closure', 'pairings'];
+    const attributes = ['country', 'type', 'classification', 'grape_variety', 'size', 'closure' /*, 'pairings' */];
     
     let totalMatches = 0;
     let totalComparisons = 0;
@@ -351,7 +351,7 @@ export function WineComparisonPage() {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {getAccuracyData().map((item, index) => {
-                          const attrKey = ['country', 'type', 'classification', 'grape_variety', 'size', 'closure', 'pairings'][index];
+                          const attrKey = ['country', 'type', 'classification', 'grape_variety', 'size', 'closure' /*, 'pairings' */][index];
                           const stats = comparisonData.statistics[attrKey as keyof ComparisonStats] as AttributeStats;
                           
                           return (

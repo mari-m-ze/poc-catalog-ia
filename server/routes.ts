@@ -6,6 +6,7 @@ import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { config } from "./config";
 import { generateWineAttributes, processWineCSV, generateWineAttributesCSV } from "./api/wine-service";
+import { analyzeExecutionAccuracy, generateAccuracyReportSummary } from "./api/wine-enrichment-statistcs";
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -339,12 +340,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ai_filled: 0,
           original_filled: 0
         },
-        pairings: {
-          total_with_original: 0,
-          matches: 0,
-          ai_filled: 0,
-          original_filled: 0
-        }
+        // pairings: {
+        //   total_with_original: 0,
+        //   matches: 0,
+        //   ai_filled: 0,
+        //   original_filled: 0
+        // }
       };
 
       // Calculate statistics for each attribute
@@ -410,16 +411,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Pairings (special handling for multiple values)
-        if (row.ai_pairings) stats.pairings.ai_filled++;
-        if (row.original_pairings) stats.pairings.original_filled++;
-        if (row.ai_pairings && row.original_pairings) {
-          stats.pairings.total_with_original++;
-          // Simple comparison for pairings (could be improved)
-          if (row.ai_pairings.toLowerCase().includes(row.original_pairings.toLowerCase()) ||
-              row.original_pairings.toLowerCase().includes(row.ai_pairings.toLowerCase())) {
-            stats.pairings.matches++;
-          }
-        }
+        // if (row.ai_pairings) stats.pairings.ai_filled++;
+        // if (row.original_pairings) stats.pairings.original_filled++;
+        // if (row.ai_pairings && row.original_pairings) {
+        //   stats.pairings.total_with_original++;
+        //   // Simple comparison for pairings (could be improved)
+        //   if (row.ai_pairings.toLowerCase().includes(row.original_pairings.toLowerCase()) ||
+        //       row.original_pairings.toLowerCase().includes(row.ai_pairings.toLowerCase())) {
+        //     stats.pairings.matches++;
+        //   }
+        // }
       });
 
       res.json({
@@ -434,6 +435,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Wine enrichment accuracy analysis endpoints
+  app.get("/api/wines/enrichment/executions/:id/accuracy", async (req: Request, res: Response) => {
+    try {
+      const executionId = parseInt(req.params.id);
+      if (isNaN(executionId)) {
+        return res.status(400).json({ message: 'Invalid execution ID' });
+      }
+
+      const accuracyReport = await analyzeExecutionAccuracy(executionId);
+      res.json(accuracyReport);
+    } catch (error) {
+      console.error('Error analyzing execution accuracy:', error);
+      res.status(500).json({ 
+        message: 'Error analyzing execution accuracy',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get("/api/wines/enrichment/executions/:id/accuracy/summary", async (req: Request, res: Response) => {
+    try {
+      const executionId = parseInt(req.params.id);
+      if (isNaN(executionId)) {
+        return res.status(400).json({ message: 'Invalid execution ID' });
+      }
+
+      const reportSummary = await generateAccuracyReportSummary(executionId);
+      res.json({ summary: reportSummary });
+    } catch (error) {
+      console.error('Error generating accuracy report summary:', error);
+      res.status(500).json({ 
+        message: 'Error generating accuracy report summary',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

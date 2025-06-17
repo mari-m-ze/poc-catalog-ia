@@ -94,7 +94,7 @@ async function processWineWithAI(input: WineInput, provider: string): Promise<Wi
     case "openai":
       return await openai.generateWineAttribute(input);
     case "anthropic":
-      throw new Error("Anthropic provider not implemented yet");
+      return await anthropic.generateWineAttribute(input);
     case "gemini":
       return await gemini.generateWineAttribute(input);
     default:
